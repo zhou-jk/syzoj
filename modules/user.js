@@ -9,6 +9,7 @@ app.get('/ranklist', async (req, res) => {
   try {
     const sort = req.query.sort || syzoj.config.sorting.ranklist.field;
     const order = req.query.order || syzoj.config.sorting.ranklist.order;
+    if (!res.locals.user) throw new ErrorMessage('请登录后继续。', { '登录': syzoj.utils.makeUrl(['login']) });
     if (!['ac_num', 'rating', 'id', 'username'].includes(sort) || !['asc', 'desc'].includes(order)) {
       throw new ErrorMessage('错误的排序参数。');
     }
@@ -33,6 +34,7 @@ app.get('/ranklist', async (req, res) => {
 app.get('/find_user', async (req, res) => {
   try {
     let user = await User.fromName(req.query.nickname);
+    if (!res.locals.user) throw new ErrorMessage('请登录后继续。', { '登录': syzoj.utils.makeUrl(['login']) });
     if (!user) throw new ErrorMessage('无此用户。');
     res.redirect(syzoj.utils.makeUrl(['user', user.id]));
   } catch (e) {
@@ -50,7 +52,7 @@ app.get('/login', async (req, res) => {
       err: new ErrorMessage('您已经登录了，请先注销。', { '注销': syzoj.utils.makeUrl(['logout'], { 'url': req.originalUrl }) })
     });
   } else {
-    res.render('login');
+    res.render('index_login');
   }
 });
 
@@ -61,7 +63,8 @@ app.get('/sign_up', async (req, res) => {
       err: new ErrorMessage('您已经登录了，请先注销。', { '注销': syzoj.utils.makeUrl(['logout'], { 'url': req.originalUrl }) })
     });
   } else {
-    res.render('sign_up');
+    res.render('error', {err: new ErrorMessage('本 OJ 目前不开放注册。')});
+    //res.render('sign_up');
   }
 });
 
@@ -69,7 +72,7 @@ app.get('/sign_up', async (req, res) => {
 app.post('/logout', async (req, res) => {
   req.session.user_id = null;
   res.clearCookie('login');
-  res.redirect(req.query.url || '/');
+  res.redirect('/');
 });
 
 // User page
@@ -77,6 +80,7 @@ app.get('/user/:id', async (req, res) => {
   try {
     let id = parseInt(req.params.id);
     let user = await User.findById(id);
+    if (!res.locals.user) throw new ErrorMessage('请登录后继续。', { '登录': syzoj.utils.makeUrl(['login']) });
     if (!user) throw new ErrorMessage('无此用户。');
     user.ac_problems = await user.getACProblems();
     user.articles = await user.getArticles();
@@ -126,6 +130,7 @@ app.get('/user/:id/edit', async (req, res) => {
   try {
     let id = parseInt(req.params.id);
     let user = await User.findById(id);
+    if (!res.locals.user) throw new ErrorMessage('请登录后继续。', { '登录': syzoj.utils.makeUrl(['login']) });
     if (!user) throw new ErrorMessage('无此用户。');
 
     let allowedEdit = await user.isAllowedEditBy(res.locals.user);
@@ -160,6 +165,7 @@ app.post('/user/:id/edit', async (req, res) => {
   try {
     let id = parseInt(req.params.id);
     user = await User.findById(id);
+    if (!res.locals.user) throw new ErrorMessage('请登录后继续。', { '登录': syzoj.utils.makeUrl(['login']) });
     if (!user) throw new ErrorMessage('无此用户。');
 
     let allowedEdit = await user.isAllowedEditBy(res.locals.user);

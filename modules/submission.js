@@ -23,7 +23,7 @@ const displayConfig = {
 app.get('/submissions', async (req, res) => {
   try {
     const curUser = res.locals.user;
-
+    if (!res.locals.user) throw new ErrorMessage('请登录后继续。', { '登录': syzoj.utils.makeUrl(['login']) });
     let query = JudgeState.createQueryBuilder();
     let isFiltered = false;
 
@@ -158,7 +158,8 @@ app.get('/submission/:id', async (req, res) => {
     if (!judge) throw new ErrorMessage("提交记录 ID 不正确。");
     const curUser = res.locals.user;
     if (!await judge.isAllowedVisitBy(curUser)) throw new ErrorMessage('您没有权限进行此操作。');
-
+    if (!res.locals.user) throw new ErrorMessage('请登录后继续。', { '登录': syzoj.utils.makeUrl(['login']) });
+    
     let contest;
     if (judge.type === 1) {
       contest = await Contest.findById(judge.type_info);
@@ -215,7 +216,7 @@ app.post('/submission/:id/rejudge', async (req, res) => {
   try {
     let id = parseInt(req.params.id);
     let judge = await JudgeState.findById(id);
-
+    if (!res.locals.user) throw new ErrorMessage('请登录后继续。', { '登录': syzoj.utils.makeUrl(['login']) });
     if (judge.pending && !(res.locals.user && await res.locals.user.hasPrivilege('manage_problem'))) throw new ErrorMessage('无法重新评测一个评测中的提交。');
 
     await judge.loadRelationships();

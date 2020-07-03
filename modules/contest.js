@@ -11,6 +11,7 @@ const { getSubmissionInfo, getRoughResult, processOverallResult } = require('../
 app.get('/contests', async (req, res) => {
   try {
     let where;
+    if (!res.locals.user) throw new ErrorMessage('请登录后继续。', { '登录': syzoj.utils.makeUrl(['login']) });
     if (res.locals.user && res.locals.user.is_admin) where = {}
     else where = { is_public: true };
 
@@ -35,10 +36,12 @@ app.get('/contests', async (req, res) => {
 
 app.get('/contest/:id/edit', async (req, res) => {
   try {
-    if (!res.locals.user || !res.locals.user.is_admin) throw new ErrorMessage('您没有权限进行此操作。');
-
     let contest_id = parseInt(req.params.id);
     let contest = await Contest.findById(contest_id);
+    
+    if (!res.locals.user) throw new ErrorMessage('请登录后继续。', { '登录': syzoj.utils.makeUrl(['login']) });
+    if (!res.locals.user || !(res.locals.user.is_admin || await contest.isSupervisior(res.locals.user))) throw new ErrorMessage('您没有权限进行此操作。');
+
     if (!contest) {
       contest = await Contest.create();
       contest.id = 0;
@@ -65,11 +68,13 @@ app.get('/contest/:id/edit', async (req, res) => {
 
 app.post('/contest/:id/edit', async (req, res) => {
   try {
-    if (!res.locals.user || !res.locals.user.is_admin) throw new ErrorMessage('您没有权限进行此操作。');
-
+    
     let contest_id = parseInt(req.params.id);
     let contest = await Contest.findById(contest_id);
     let ranklist = null;
+    if (!res.locals.user) throw new ErrorMessage('请登录后继续。', { '登录': syzoj.utils.makeUrl(['login']) });
+    if (!res.locals.user || !(res.locals.user.is_admin || await contest.isSupervisior(res.locals.user))) throw new ErrorMessage('您没有权限进行此操作。');
+
     if (!contest) {
       contest = await Contest.create();
 
@@ -121,10 +126,10 @@ app.get('/contest/:id', async (req, res) => {
   try {
     const curUser = res.locals.user;
     let contest_id = parseInt(req.params.id);
-
+    if (!res.locals.user) throw new ErrorMessage('请登录后继续。', { '登录': syzoj.utils.makeUrl(['login']) });
     let contest = await Contest.findById(contest_id);
     if (!contest) throw new ErrorMessage('无此比赛。');
-    if (!contest.is_public && (!res.locals.user || !res.locals.user.is_admin)) throw new ErrorMessage('比赛未公开，请耐心等待 (´∀ `)');
+    if (!contest.is_public && (!res.locals.user || !(res.locals.user.is_admin))) throw new ErrorMessage('比赛未公开，请耐心等待 (´∀ `)');
 
     const isSupervisior = await contest.isSupervisior(curUser);
     contest.running = contest.isRunning();
@@ -226,7 +231,7 @@ app.get('/contest/:id/ranklist', async (req, res) => {
     let contest_id = parseInt(req.params.id);
     let contest = await Contest.findById(contest_id);
     const curUser = res.locals.user;
-
+    if (!res.locals.user) throw new ErrorMessage('请登录后继续。', { '登录': syzoj.utils.makeUrl(['login']) });
     if (!contest) throw new ErrorMessage('无此比赛。');
     if (!contest.is_public && (!res.locals.user || !res.locals.user.is_admin)) throw new ErrorMessage('比赛未公开，请耐心等待 (´∀ `)');
     if ([contest.allowedSeeingResult() && contest.allowedSeeingOthers(),
@@ -299,6 +304,7 @@ app.get('/contest/:id/submissions', async (req, res) => {
   try {
     let contest_id = parseInt(req.params.id);
     let contest = await Contest.findById(contest_id);
+    if (!res.locals.user) throw new ErrorMessage('请登录后继续。', { '登录': syzoj.utils.makeUrl(['login']) });
     if (!contest.is_public && (!res.locals.user || !res.locals.user.is_admin)) throw new ErrorMessage('比赛未公开，请耐心等待 (´∀ `)');
 
     if (contest.isEnded()) {
@@ -426,6 +432,7 @@ app.get('/contest/submission/:id', async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const judge = await JudgeState.findById(id);
+    if (!res.locals.user) throw new ErrorMessage('请登录后继续。', { '登录': syzoj.utils.makeUrl(['login']) });
     if (!judge) throw new ErrorMessage("提交记录 ID 不正确。");
     const curUser = res.locals.user;
     if ((!curUser) || judge.user_id !== curUser.id) throw new ErrorMessage("您没有权限执行此操作。");
@@ -477,6 +484,7 @@ app.get('/contest/:id/problem/:pid', async (req, res) => {
   try {
     let contest_id = parseInt(req.params.id);
     let contest = await Contest.findById(contest_id);
+    if (!res.locals.user) throw new ErrorMessage('请登录后继续。', { '登录': syzoj.utils.makeUrl(['login']) });
     if (!contest) throw new ErrorMessage('无此比赛。');
     const curUser = res.locals.user;
 
@@ -526,6 +534,7 @@ app.get('/contest/:id/:pid/download/additional_file', async (req, res) => {
   try {
     let id = parseInt(req.params.id);
     let contest = await Contest.findById(id);
+    if (!res.locals.user) throw new ErrorMessage('请登录后继续。', { '登录': syzoj.utils.makeUrl(['login']) });
     if (!contest) throw new ErrorMessage('无此比赛。');
 
     let problems_id = await contest.getProblems();

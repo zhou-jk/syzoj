@@ -5,4 +5,109 @@
   <p><button class="ui blue labeled icon button" name="type" value="reset_discussion" type="submit"><i class="ui repeat icon"></i>重新计算讨论版回复数和回复时间</button></p>
   <p><button class="ui blue labeled icon button" name="type" value="reset_codelen" type="submit"><i class="ui repeat icon"></i>重新计算提交代码长度</button></p>
 </form>
+<%# some comments
+<div class="padding">
+  <h1>批量注册</h1>
+  <div class="ui error message" id="error" data-am-alert hidden>
+    <p id="error_info"></p>
+  </div>
+          <form class="ui form">
+                <div class="inline field">
+                    <label for="username">用户名</label>
+                    <input type="text" placeholder="" id="username">
+                    <label class="ui header">编号</label>
+		            <input type="text" placeholder="" id="name_floor">
+    		        <label class="ui header">——</label>
+		            <input type="text" placeholder="" id="name_top">
+                <a id="sign_up" class="ui button" href="javascript:submitall();">提交</a>
+                </div>
+            </form>
+</div>
+%>
+
+<script src="<%- lib('blueimp-md5/2.10.0/js/md5.min.js') %>"></script>
+<script type="text/javascript">
+function show_error(error) {
+    $("#error_info").text(error);
+    $("#error").show();
+}
+
+function success() {
+
+}
+
+function submit() {
+    password = md5(password + "syzoj2_xxx")
+    $("#sign_up").addClass("loading");
+    $.ajax({
+        url: '/api/sign_up_all',
+        type: 'POST',
+        async: true,
+        data: {
+          username: username,
+          password: password,
+          email: email,
+          prevUrl: <%- serializejs(req.query.url || '/') %>
+        },
+        success: function(data) {
+            error_code = data.error_code;
+            switch(error_code){
+                case 2001:
+                    show_error("服务器未收到数据");
+                    break;
+                case 2005:
+                case 2002:
+                    show_error("用户名需要大于 3 个字符小于 16 个字符，仅允许字母数字和下划线");
+                    break;
+                case 2007:
+                case 2003:
+                    show_error("密码不得为空");
+                    break;
+                case 2004:
+                case 2006:
+                    show_error("请输入正确的邮箱");
+                    break;
+                case 2008:
+                    show_error("已经有人用过这个用户名了");
+                    break;
+                case 2009:
+                    show_error("邮箱地址已被占用");
+                    break;
+                case 2010:
+                    show_error("验证邮件发送失败：\n" + data.message);
+                    break;
+                case 1:
+                    success();
+                    break;
+                default:
+                    show_error("未知错误：" + JSON.stringify(data));
+                    break;
+            }
+            $("#sign_up").removeClass("loading");
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+            alert(XMLHttpRequest.responseText);
+            show_error("未知错误");
+            $("#sign_up").removeClass("loading");
+        }
+    });
+}
+
+function submitall()
+{	var name=$("#username").val();
+	var floor=parseInt($("#name_floor").val());
+	var top=parseInt($("#name_top").val());
+	while (floor<=top)
+	{	username=name;
+		if (floor<100) username=username+"0";
+		if (floor<10) username=username+"0";
+		username=username+String(floor);
+		password=username;
+		email="";
+		submit();
+		floor=floor+1;
+		}
+	alert("注册成功！");
+}
+</script>
 <% include admin_footer %>

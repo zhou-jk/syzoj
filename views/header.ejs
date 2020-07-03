@@ -6,6 +6,7 @@
     <meta content="IE=edge" http-equiv="X-UA-Compatible">
     <meta name="viewport" content="width=1200">
     <title><%= title %> - <%= syzoj.config.title %></title>
+    <link rel="icon" type="type="images/x-icon"" href="https://cdn.zhou-jk.cn/logo.ico">
     <link href="<%- lib('semantic-ui/2.4.1/semantic.min.css') %>" rel="stylesheet">
     <link href="<%- selfLib('tomorrow.css') %>" rel="stylesheet">
     <link href="<%- selfLib('math.css') %>" rel="stylesheet">
@@ -45,6 +46,26 @@
 
     </script>
     <% } %>
+    <script>
+$(document).ready(function (){
+    $("pre").prepend("<a class=\"copy-button ui button\" style=\"position: absolute;top: 0px;right: -7px;border-top-left-radius: 0px;border-bottom-right-radius: 0px\">复制</a>");
+    $(".copy-button").click(function() {
+        var element = $(this).siblings("code");
+        var text = $(element).text();
+        var $temp = $("<textarea>");
+        $("body").append($temp);
+        $temp.val(text).select();
+        document.execCommand("copy");
+        $temp.remove();
+        $(this).text("复制成功");
+
+        var e = this;
+        setTimeout(function() {
+            $(e).text("复制");
+        }, 500);
+    });
+});
+    </script>
 </head>
 <body style="position: relative; margin-top: 49px; height: calc(100% - 49px); overflow-y: overlay; ">
     <div class="ui fixed borderless menu" style="position: fixed; height: 49px; ">

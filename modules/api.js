@@ -5,7 +5,7 @@ const Email = require('../libs/email');
 const jwt = require('jsonwebtoken');
 
 function setLoginCookie(username, password, res) {
-  res.cookie('login', JSON.stringify([username, password]), { maxAge: 10 * 365 * 24 * 60 * 60 * 1000 });
+  res.cookie('login', JSON.stringify([username, password]));
 }
 
 // Login
@@ -63,7 +63,6 @@ app.post('/api/forget', async (req, res) => {
   }
 });
 
-// Sign up
 app.post('/api/sign_up', async (req, res) => {
   try {
     res.setHeader('Content-Type', 'application/json');
@@ -128,6 +127,31 @@ app.post('/api/sign_up', async (req, res) => {
   }
 });
 
+//sign_up_all
+app.post('/api/sign_up_all', async (req, res) => {
+  try {
+    res.setHeader('Content-Type', 'application/json');
+    let user = await User.fromName(req.body.username);
+    if (user) throw 2008;
+    if (!syzoj.utils.isValidUsername(req.body.username)) throw 2002;
+
+    user = await User.create({
+      username: req.body.username,
+      password: req.body.password,
+      email: req.body.email,
+      is_show: syzoj.config.default.user.show,
+      rating: syzoj.config.default.user.rating,
+      register_time: parseInt((new Date()).getTime() / 1000)
+    });
+    await user.save();
+
+    res.send(JSON.stringify({ error_code: 1 }));
+  } catch (e) {
+    syzoj.log(e);
+    res.send(JSON.stringify({ error_code: e }));
+  }
+});
+
 app.get('/api/forget_confirm', async (req, res) => {
   try {
     try {
@@ -145,6 +169,7 @@ app.get('/api/forget_confirm', async (req, res) => {
     });
   }
 });
+
 
 app.post('/api/reset_password', async (req, res) => {
   try {

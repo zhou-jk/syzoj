@@ -2,7 +2,7 @@ let User = syzoj.model('user');
 let Article = syzoj.model('article');
 let Contest = syzoj.model('contest');
 let Problem = syzoj.model('problem');
-let Divine = syzoj.lib('divine');
+let Divine = require('syzoj-divine');
 let TimeAgo = require('javascript-time-ago');
 let zh = require('../libs/timeago');
 TimeAgo.locale(zh);
@@ -40,15 +40,18 @@ app.get('/', async (req, res) => {
       title: problem.title,
       time: timeAgo.format(new Date(problem.publicize_time)),
     }));
-
-    res.render('index', {
-      ranklist: ranklist,
-      notices: notices,
-      fortune: fortune,
-      contests: contests,
-      problems: problems,
-      links: syzoj.config.links
-    });
+    if (res.locals.user)
+    {
+        res.render('index', {
+  		    ranklist: ranklist,
+  		    notices: notices,
+  		    fortune: fortune,
+  		    contests: contests,
+  		    problems: problems,
+  		    links: syzoj.config.links
+	    });
+        } else
+        res.render('index_login');
   } catch (e) {
     syzoj.log(e);
     res.render('error', {
@@ -57,8 +60,10 @@ app.get('/', async (req, res) => {
   }
 });
 
+
 app.get('/help', async (req, res) => {
   try {
+    if (!res.locals.user) throw new ErrorMessage('请登录后继续。', { '登录': syzoj.utils.makeUrl(['login']) });
     res.render('help');
   } catch (e) {
     syzoj.log(e);

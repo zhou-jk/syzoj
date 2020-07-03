@@ -76,6 +76,18 @@
       </div>
     </div>
     <div class="right floated five wide column">
+        <h4 class="ui top attached block header"><i class="ui search icon"></i>搜索题目</h4>
+          <div class="ui bottom attached segment">
+            <form action="<%= syzoj.utils.makeUrl(['problems', 'search']) %>" method="get">
+              <div class="ui search" style="width: 100%; ">
+                <div class="ui left icon input" style="width: 100%; ">
+                  <input class="prompt" style="width: 100%; " type="text" placeholder="ID / 题目名 …" name="keyword">
+                  <i class="search icon"></i>
+                </div>
+                <div class="results" style="width: 100%; "></div>
+              </div>
+            </form>
+         </div>
         <h4 class="ui top attached block header"><i class="ui quote left icon"></i>一言（ヒトコト）</h4>
         <div class="ui bottom attached center aligned segment">
           <div class="ui active centered inline loader" id="hitokoto-loader"></div>
@@ -166,18 +178,6 @@
             </div>
         </div>
         <% } %>
-      <h4 class="ui top attached block header"><i class="ui search icon"></i>搜索题目</h4>
-      <div class="ui bottom attached segment">
-        <form action="<%= syzoj.utils.makeUrl(['problems', 'search']) %>" method="get">
-          <div class="ui search" style="width: 100%; ">
-            <div class="ui left icon input" style="width: 100%; ">
-              <input class="prompt" style="width: 100%; " type="text" placeholder="ID / 题目名 …" name="keyword">
-              <i class="search icon"></i>
-            </div>
-            <div class="results" style="width: 100%; "></div>
-          </div>
-        </form>
-      </div>
       <h4 class="ui top attached block header"><i class="ui calendar icon"></i>近期比赛</h4>
       <div class="ui bottom attached <% if (!contests || !contests.length) { %>center aligned <% } %>segment">
         <% if (!contests || !contests.length) { %>

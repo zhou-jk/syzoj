@@ -5,6 +5,7 @@ let User = syzoj.model('user');
 
 app.get('/discussion/:type?', async (req, res) => {
   try {
+    if (!res.locals.user) throw new ErrorMessage('请登录后继续。', { '登录': syzoj.utils.makeUrl(['login']) });
     if (!['global', 'problems'].includes(req.params.type)) {
       res.redirect(syzoj.utils.makeUrl(['discussion', 'global']));
     }
@@ -46,6 +47,7 @@ app.get('/discussion/problem/:pid', async (req, res) => {
   try {
     let pid = parseInt(req.params.pid);
     let problem = await Problem.findById(pid);
+    if (!res.locals.user) throw new ErrorMessage('请登录后继续。', { '登录': syzoj.utils.makeUrl(['login']) });
     if (!problem) throw new ErrorMessage('无此题目。');
     if (!await problem.isAllowedUseBy(res.locals.user)) {
       throw new ErrorMessage('您没有权限进行此操作。');
@@ -77,6 +79,7 @@ app.get('/article/:id', async (req, res) => {
   try {
     let id = parseInt(req.params.id);
     let article = await Article.findById(id);
+    if (!res.locals.user) throw new ErrorMessage('请登录后继续。', { '登录': syzoj.utils.makeUrl(['login']) });
     if (!article) throw new ErrorMessage('无此帖子。');
 
     await article.loadRelationships();

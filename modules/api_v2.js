@@ -4,7 +4,7 @@ const url = require('url');
 app.get('/api/v2/search/users/:keyword*?', async (req, res) => {
   try {
     let User = syzoj.model('user');
-
+    if (!res.locals.user) throw new ErrorMessage('请登录后继续。', { '登录': syzoj.utils.makeUrl(['login']) });
     let keyword = req.params.keyword || '';
     let conditions = [];
     const uid = parseInt(keyword) || 0;
@@ -39,7 +39,7 @@ app.get('/api/v2/search/users/:keyword*?', async (req, res) => {
 app.get('/api/v2/search/problems/:keyword*?', async (req, res) => {
   try {
     let Problem = syzoj.model('problem');
-
+    if (!res.locals.user) throw new ErrorMessage('请登录后继续。', { '登录': syzoj.utils.makeUrl(['login']) });
     let keyword = req.params.keyword || '';
     let problems = await Problem.find({
       where: {
@@ -77,7 +77,7 @@ app.get('/api/v2/search/tags/:keyword*?', async (req, res) => {
   try {
     let Problem = syzoj.model('problem');
     let ProblemTag = syzoj.model('problem_tag');
-
+    if (!res.locals.user) throw new ErrorMessage('请登录后继续。', { '登录': syzoj.utils.makeUrl(['login']) });
     let keyword = req.params.keyword || '';
     let tags = await ProblemTag.find({
       where: {
@@ -100,6 +100,7 @@ app.get('/api/v2/search/tags/:keyword*?', async (req, res) => {
 
 app.apiRouter.post('/api/v2/markdown', async (req, res) => {
   try {
+    if (!res.locals.user) throw new ErrorMessage('请登录后继续。', { '登录': syzoj.utils.makeUrl(['login']) });
     let s = await syzoj.utils.markdown(req.body.s.toString(), null, req.body.noReplaceUI === 'true');
     res.send(s);
   } catch (e) {
@@ -119,6 +120,7 @@ function verifyJWT(token) {
 
 app.apiRouter.get('/api/v2/download/:token', async (req, res) => {
   try {
+    if (!res.locals.user) throw new ErrorMessage('请登录后继续。', { '登录': syzoj.utils.makeUrl(['login']) });
     const token = req.params.token, data = jwt.decode(token);
     if (!data) throw new ErrorMessage("无效的令牌。");
     if (url.parse(syzoj.utils.getCurrentLocation(req, true)).href !== url.parse(syzoj.config.site_for_download).href) {
